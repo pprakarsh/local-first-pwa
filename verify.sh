@@ -111,6 +111,62 @@ else
   fail "guards still failing after restore -- the verify script is buggy"
 fi
 
+say "agent routers are present, thin, and point at real files"
+for f in AGENTS.md CLAUDE.md SKILL.md .windsurfrules .clinerules \
+         .cursor/rules/local-first-pwa.mdc .github/copilot-instructions.md; do
+  if [ -f "${HERE}/${f}" ]; then pass "${f} exists"; else fail "${f} missing"; fi
+done
+
+# Routers must route, not duplicate: anything over 40 lines is becoming a second
+# copy of the method and will drift away from SKILL.md.
+for f in CLAUDE.md .windsurfrules .clinerules \
+         .cursor/rules/local-first-pwa.mdc .github/copilot-instructions.md; do
+  n="$(wc -l < "${HERE}/${f}" | tr -d ' ')"
+  if [ "${n}" -le 40 ]; then pass "${f} is a router, not a copy (${n} lines)"
+  else fail "${f} has grown to ${n} lines -- routers must point at SKILL.md, not restate it"; fi
+done
+
+# every markdown link target in the canonical docs must exist
+BROKEN=0
+for doc in AGENTS.md SKILL.md README.md; do
+  for target in $(grep -oE '\]\(([A-Za-z0-9_./-]+\.md)\)' "${HERE}/${doc}" \
+                  | sed 's/^](//;s/)$//' | sort -u); do
+    [ -f "${HERE}/${target}" ] || { echo "    ${doc} -> missing ${target}"; BROKEN=1; }
+  done
+done
+[ "${BROKEN}" -eq 0 ] && pass "every doc link resolves" || fail "a doc links to a missing file"
+
+# the method must stay tool-agnostic
+if grep -rqiE 'kiro|~/\.claude|~/\.cursor' "${HERE}/SKILL.md" "${HERE}/reference"; then
+  fail "SKILL.md or reference/ names a specific tool -- keep tool wiring in AGENTS.md"
+else
+  pass "SKILL.md and reference/ are tool-agnostic"
+fi
+
+say "install.sh"
+bash -n "${HERE}/install.sh" && pass "install.sh parses" || fail "install.sh has a syntax error"
+
+# a project install must rewrite its own doc links, or the vendored copy 404s
+PROJ="${WORK}/proj"
+mkdir -p "${PROJ}"
+"${HERE}/install.sh" project "${PROJ}" >/dev/null 2>&1
+VBROKEN=0
+for doc in AGENTS.md SKILL.md CLAUDE.md; do
+  for target in $(grep -oE '\]\(([A-Za-z0-9_./-]+\.md)\)' "${PROJ}/${doc}" \
+                  | sed 's/^](//;s/)$//' | sort -u); do
+    [ -f "${PROJ}/${target}" ] || { echo "    vendored ${doc} -> missing ${target}"; VBROKEN=1; }
+  done
+done
+[ "${VBROKEN}" -eq 0 ] && pass "a project install leaves every link resolvable" \
+  || fail "a project install produced broken doc links"
+[ -f "${PROJ}/.github/copilot-instructions.md" ] && pass "project install writes the Copilot router" \
+  || fail "project install missed the Copilot router"
+if LC_ALL=C grep -q '[^ -~]' "${HERE}/install.sh"; then
+  fail "install.sh contains non-ASCII bytes"
+else
+  pass "install.sh is pure ASCII"
+fi
+
 printf '\n'
 if [ "${FAILED}" -eq 0 ]; then
   echo "VERIFY PASSED - the scaffold produces a working, tested, guarded app"

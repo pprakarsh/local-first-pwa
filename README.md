@@ -28,15 +28,44 @@ documents. Then delete what you don't need and build your own screens.
 
 `file://` will not work — ES modules are blocked by CORS. Always serve over `localhost`.
 
-## Use it as a Kiro skill
+## Use it with any AI agent
+
+The method is tool-agnostic. `AGENTS.md` is the entry point — the cross-tool standard that Codex,
+Cursor, Copilot, Aider, Windsurf, Zed, Gemini CLI and Claude Code all read natively — and small
+router files wire it into the tools that want their own filename.
+
+**Globally, for your own agent** (a symlink, so `git pull` updates every tool at once):
 
 ```bash
-git clone https://github.com/pprakarsh/local-first-pwa.git ~/.kiro/skills/local-first-pwa
+git clone https://github.com/pprakarsh/local-first-pwa.git ~/src/local-first-pwa
+cd ~/src/local-first-pwa
+./install.sh kiro        # or: claude | cursor
+./install.sh list        # show what is installed where
 ```
 
-`SKILL.md` carries the YAML frontmatter Kiro expects, so an agent will load it on its own when you
-ask for something like *"build me a habit tracker that works on my phone"* — and then follow the
-method rather than inventing one.
+**Into a project**, so any agent that opens that repo picks it up:
+
+```bash
+./install.sh project ~/my-project
+```
+
+| Tool | File it reads | Role |
+|---|---|---|
+| Codex, Cursor, Copilot, Aider, Windsurf, Zed, Gemini CLI, Claude Code | `AGENTS.md` | The cross-tool standard, read natively |
+| Claude Code (older), Anthropic Agent Skills | `CLAUDE.md`, `SKILL.md` | `CLAUDE.md` imports AGENTS.md; `SKILL.md` carries skill frontmatter |
+| Kiro | `SKILL.md` | Skill frontmatter, auto-activated by description match |
+| Cursor (scoped rules) | `.cursor/rules/local-first-pwa.mdc` | Router with Cursor frontmatter and globs |
+| GitHub Copilot | `.github/copilot-instructions.md` | Router |
+| Windsurf | `.windsurfrules` | Router |
+| Cline / Roo | `.clinerules` | Router |
+
+**One source of truth.** The method lives only in `SKILL.md` and `reference/`. Every per-tool file
+is a short pointer, never a copy — `verify.sh` fails if any of them grows past 40 lines, because at
+that point it has become a second copy that will drift.
+
+Skill, or always-on rules? This is deliberately a **skill**: it is needed for *some* tasks, not
+every session. That is why the content sits behind a description-matched trigger rather than being
+injected into every prompt.
 
 ## Read it as a guide
 

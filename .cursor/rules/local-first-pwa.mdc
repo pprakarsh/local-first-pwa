@@ -1,0 +1,18 @@
+---
+description: Building a local-first installable PWA that runs on iOS, Android and desktop with no framework, no build step and no dependencies. Covers architecture, browserless testing, platform limits, deployment and device sync.
+globs: ["**/*.js", "**/*.html", "**/*.css", "**/sw.js", "**/manifest.webmanifest"]
+alwaysApply: false
+---
+
+Read `AGENTS.md` at the repository root, then `SKILL.md` for the method, then the one
+`reference/*.md` file that matches the step you are on.
+
+Non-negotiables: no runtime dependencies, no build step, no framework; local-first (fully usable
+offline, no account); one store owns all state and persistence; views are pure functions returning
+HTML strings; all events delegated through one `data-action` registry; every rule that can be a test
+is a test; shell scripts stay ASCII; bump the app version and service worker cache name together.
+
+Before promising any feature, check `reference/platform-limits.md` — Apple Watch, Live Activities,
+backgrounded audio, background GPS, HealthKit and Web Bluetooth are all impossible here.
+
+Do not duplicate the method into this file; it will drift.

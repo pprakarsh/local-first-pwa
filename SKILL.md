@@ -19,6 +19,11 @@ tags:
 A method for building a single-user app that installs on a phone, works offline, keeps data on the
 device, and still runs in five years because it has no toolchain to rot.
 
+> **For any AI agent reading this:** this file is the method. Treat the hard rules below as policy,
+> not suggestions, and the verification gates as mandatory. Load the `reference/` file named in the
+> table at the end when you reach the matching step — do not try to hold all of it at once.
+> If you are looking for how this skill is wired into different tools, see `AGENTS.md`.
+
 Proven on a workout tracker: ~4,000 lines of app code, 637 assertions, zero runtime dependencies,
 deployed free on GitHub Pages, installed on iOS from Safari.
 
@@ -60,7 +65,7 @@ web app with all the maintenance that implies.
 ### 1. Scaffold
 
 ```bash
-~/.kiro/skills/local-first-pwa/scripts/scaffold.sh ~/my-app "My App"
+./scripts/scaffold.sh ~/my-app "My App"        # path relative to this skill directory
 cd ~/my-app && (cd test && npm install && npm test)
 python3 -m http.server 8000 --bind 127.0.0.1    # http://localhost:8000
 ```
