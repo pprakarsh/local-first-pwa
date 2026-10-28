@@ -58,7 +58,7 @@ Do not hand-write the boilerplate. Run the scaffold:
 ```bash
 ./scripts/scaffold.sh ~/my-app "My App"
 cd ~/my-app
-(cd test && npm install && npm test)            # must be green before you build anything
+(cd test && npm install && npm test)            # must exit 0 before you build anything
 python3 -m http.server 8000 --bind 127.0.0.1    # http://localhost:8000
 ```
 

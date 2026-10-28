@@ -107,6 +107,12 @@ ok(upward.length === 0, 'no core module imports a view');
 
 ## Test discipline
 
+- **A suite passes when it exits 0, and for no other reason.** Never decide a run was clean by
+  reading its output for `PASSED` or grepping it for `FAIL`. A suite that dies before the first
+  assertion — a syntax error, a bad import, a throw at module scope — prints neither word, and an
+  output-matching check reads that silence as success. Chain the suites with `&&` and let a
+  non-zero status stop you. Running one alone, branch on the status:
+  `node smoke.mjs >/tmp/smoke.log 2>&1 && echo PASS || echo FAIL`.
 - **Every bug fix gets a test that fails without the fix.** This is the habit that keeps the
   codebase honest, and it is how most real bugs in this pattern were found.
 - **Test the behaviour a user would notice**, not the implementation.
